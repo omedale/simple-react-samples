@@ -1,15 +1,45 @@
 import React, { Component } from 'react';
 import './App.css';
-import Person from './Person/Person';
+import Corkpit from '../components/Cockpits/Cockpit'
+import Persons from '../components/Persons/Persons';
+import AuthContext from '../context/auth-context';
 
 class App extends Component {
-  state = {
-    persons: [
-      { id: 'gjvehf', name: 'Medale', age: 34 },
-      { id: 'gvjhef', name: 'Femi', age: 16 },
-      { id: 'vbifk', name: 'Ayo', age: 20 }
-    ],
-    showPersons: false
+  constructor(props) {
+    super(props);
+    console.log(props)
+    this.state = {
+      persons: [
+        { id: 'gjvehf', name: 'Medale', age: 34 },
+        { id: 'gvjhef', name: 'Femi', age: 16 },
+        { id: 'vbifk', name: 'Ayo', age: 20 }
+      ],
+      showPersons: false,
+      showCockpit: true,
+      authenticated: false
+    }  
+  }
+
+  loginHandler = () => {
+    this.setState({authenticated: true})
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    console.log('getDerivedStateFromProps', props)
+    return state
+  }
+
+  componentDidMount() {
+    console.log('componentDidMount')
+  }
+
+  componentDidUpdate() {
+    console.log('App,  componentDidUpdate')
+  }
+
+  shouldComponentUpdate(prevProps, prevSate) {
+    console.log('App,  shouldComponentUpdate')
+    return true
   }
 
   switchNameHandler = (newName) => {
@@ -56,29 +86,32 @@ class App extends Component {
 
   render() {
     let persons = null;
-    let classes = ['red', 'bold'].join(' ')
     if (this.state.showPersons) {
       persons = (
         <div>
-          {this.state.persons.map((person, index) => {
-            return <Person
-                    deletePerson={() => this.deletePersonHandler(index)}
-                    name={person.name}
-                    age={person.age}
-                    key={person.id}
-                    changed={(e) => this.nameChangedHandler(e, person.id)}
-                    >
-                    Delete this
-                  </Person>
-          })}
+        <Persons
+          isAuthenticated={this.state.authenticated}
+          persons={this.state.persons}
+          clicked={this.deletePersonHandler}
+          changed={this.nameChangedHandler}  />
         </div>
       )
     }
     return (
       <div className="App">
-        <h1 className={classes}> hello</h1>
-        <button onClick={this.togglePersonsHandler}>TOGGLE persons</button>
-        {persons}
+      <button onClick={() => {
+        this.setState({showCockpit: false})
+      }}>remove cockpit</button>
+        <AuthContext.Provider value={{ 
+          authenticated: this.state.authenticated,
+          login: this.loginHandler }}>
+          {this.state.showCockpit ? 
+            (<Corkpit 
+              persons={this.state.persons}
+              title={this.props.appTitle} clicked={this.togglePersonsHandler}/>)
+              : null}
+          {persons}
+        </AuthContext.Provider>
       </div>
     );
   }
